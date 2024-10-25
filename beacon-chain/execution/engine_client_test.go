@@ -1769,7 +1769,7 @@ func fixturesStruct() *payloadFixtures {
 			Proofs:      []hexutil.Bytes{[]byte("proof1"), []byte("proof2")},
 			Blobs:       []hexutil.Bytes{{'a'}, {'b'}},
 		},
-		ExecutionRequests: []hexutil.Bytes{append([]byte{0}, depositRequestBytes...), append([]byte{1}, withdrawalRequestBytes...), append([]byte{2}, consolidationRequestBytes...)},
+		ExecutionRequests: []hexutil.Bytes{append([]byte{depositRequestType}, depositRequestBytes...), append([]byte{withdrawalRequestType}, withdrawalRequestBytes...), append([]byte{consolidationRequestType}, consolidationRequestBytes...)},
 	}
 	parent := bytesutil.PadTo([]byte("parentHash"), fieldparams.RootLength)
 	sha3Uncles := bytesutil.PadTo([]byte("sha3Uncles"), fieldparams.RootLength)
