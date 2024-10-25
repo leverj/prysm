@@ -23,7 +23,7 @@ func TestGetDecodedExecutionRequests(t *testing.T) {
 			"680000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
 		require.NoError(t, err)
 		ebe := &enginev1.ExecutionBundleElectra{
-			ExecutionRequests: [][]byte{append([]byte{0}, depositRequestBytes...), append([]byte{2}, consolidationRequestBytes...)},
+			ExecutionRequests: [][]byte{append([]byte{depositRequestType}, depositRequestBytes...), append([]byte{consolidationRequestType}, consolidationRequestBytes...)},
 		}
 		requests, err := ebe.GetDecodedExecutionRequests()
 		require.NoError(t, err)
