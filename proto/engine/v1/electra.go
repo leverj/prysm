@@ -76,7 +76,7 @@ func EncodeExecutionRequests(requests *ExecutionRequests) ([]hexutil.Bytes, erro
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to marshal deposit requests")
 		}
-		requestData := []byte{0}
+		requestData := []byte{depositRequestType}
 		requestData = append(requestData, drBytes...)
 		requestsData = append(requestsData, requestData)
 	}
