@@ -30,6 +30,7 @@ func (ebe *ExecutionBundleElectra) GetDecodedExecutionRequests() (*ExecutionRequ
 	var prevTypeNum uint8
 	for i := range ebe.ExecutionRequests {
 		requestType := ebe.ExecutionRequests[i][0]
+		// Requests must be sorted in ascending order by request type.
 		if prevTypeNum > requestType {
 			return nil, errors.New("invalid execution request type order, requests should be in sorted order")
 		}
