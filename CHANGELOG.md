@@ -43,7 +43,7 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Fixed mesh size by appending `gParams.Dhi = gossipSubDhi`
 - Fix skipping partial withdrawals count.
 - wait for the async StreamEvent writer to exit before leaving the http handler, avoiding race condition panics [pr](https://github.com/prysmaticlabs/prysm/pull/14557)
-- EIP7521 - fixing withdrawal bug
+- EIP7521 - fixing withdrawal bug, pending partial withdrawals was not taken account of in the withdrawal sweep. The already withdrawn balance should be deducted from the balance considered in the sweep.
 
 ### Security
 
