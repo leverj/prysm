@@ -86,7 +86,10 @@ func (vs *Server) packAttestations(ctx context.Context, latestState state.Beacon
 		if err != nil {
 			return nil, err
 		}
-		attsById[id] = as
+		attsById[id], err = proposerAtts(as).sort()
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var attsForInclusion proposerAtts

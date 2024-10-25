@@ -711,73 +711,69 @@ func Test_packAttestations_ElectraOnChainAggregates(t *testing.T) {
 	// - data_root_1 and committee_index_0: 1 single aggregate
 	// - data_root_1 and committee_index_1: 3 single aggregates
 	//
-	// Because the function tries to aggregate attestations, we have to create attestations which are not aggregatable.
-	// It suffices that they have overlapping aggregation bits.
+	// Because the function tries to aggregate attestations, we have to create attestations which are not aggregatable
+	// and are not redundant when using MaxCover.
+	// The function should also sort attestation by ID before computing the On-Chain Aggregate, so we want unsorted aggregation bits
+	// to test the sorting part.
 	//
 	// The result should be the following six on-chain aggregates:
-	// - for data_root_0 combining single aggregates at index 0 for each committee
-	// - for data_root_0 combining single aggregates at index 1 for each committee
+	// - for data_root_0 combining the most profitable aggregate for each committee
+	// - for data_root_0 combining the second most profitable aggregate for each committee
 	// - for data_root_0 constructed from the single aggregate at index 2 for committee_index_0
-	// - for data_root_1 combining single aggregates at index 0 for each committee
+	// - for data_root_1 combining the most profitable aggregate for each committee
 	// - for data_root_1 constructed from the single aggregate at index 1 for committee_index_1
 	// - for data_root_1 constructed from the single aggregate at index 2 for committee_index_1
-	//
-	// This test has no control over the index of a single aggregate because MaxCover may rearrange them.
-	// It means that even if we save d0_c0_a1, d0_c0_a2 and d0_c0_a3 to the pool in this exact order,
-	// at the time of constructing the on-chain aggregate they may be rearranged. This does not
-	// change the total number of on-chain aggregates constructed because the number of single aggregates
-	// remains the same.
 
 	d0_c0_a1 := &ethpb.AttestationElectra{
-		AggregationBits: bitfield.Bitlist{0b11110},
+		AggregationBits: bitfield.Bitlist{0b1000011},
 		CommitteeBits:   cb0,
 		Data:            data0,
 		Signature:       sig.Marshal(),
 	}
 	d0_c0_a2 := &ethpb.AttestationElectra{
-		AggregationBits: bitfield.Bitlist{0b11001},
+		AggregationBits: bitfield.Bitlist{0b1100101},
 		CommitteeBits:   cb0,
 		Data:            data0,
 		Signature:       sig.Marshal(),
 	}
 	d0_c0_a3 := &ethpb.AttestationElectra{
-		AggregationBits: bitfield.Bitlist{0b10111},
+		AggregationBits: bitfield.Bitlist{0b1111000},
 		CommitteeBits:   cb0,
 		Data:            data0,
 		Signature:       sig.Marshal(),
 	}
 	d0_c1_a1 := &ethpb.AttestationElectra{
-		AggregationBits: bitfield.Bitlist{0b11110},
+		AggregationBits: bitfield.Bitlist{0b1111100},
 		CommitteeBits:   cb1,
 		Data:            data0,
 		Signature:       sig.Marshal(),
 	}
 	d0_c1_a2 := &ethpb.AttestationElectra{
-		AggregationBits: bitfield.Bitlist{0b10111},
+		AggregationBits: bitfield.Bitlist{0b1001111},
 		CommitteeBits:   cb1,
 		Data:            data0,
 		Signature:       sig.Marshal(),
 	}
 	d1_c0_a1 := &ethpb.AttestationElectra{
-		AggregationBits: bitfield.Bitlist{0b11111},
+		AggregationBits: bitfield.Bitlist{0b1111111},
 		CommitteeBits:   cb0,
 		Data:            data1,
 		Signature:       sig.Marshal(),
 	}
 	d1_c1_a1 := &ethpb.AttestationElectra{
-		AggregationBits: bitfield.Bitlist{0b11110},
+		AggregationBits: bitfield.Bitlist{0b1000011},
 		CommitteeBits:   cb1,
 		Data:            data1,
 		Signature:       sig.Marshal(),
 	}
 	d1_c1_a2 := &ethpb.AttestationElectra{
-		AggregationBits: bitfield.Bitlist{0b11001},
+		AggregationBits: bitfield.Bitlist{0b1100101},
 		CommitteeBits:   cb1,
 		Data:            data1,
 		Signature:       sig.Marshal(),
 	}
 	d1_c1_a3 := &ethpb.AttestationElectra{
-		AggregationBits: bitfield.Bitlist{0b10111},
+		AggregationBits: bitfield.Bitlist{0b1111000},
 		CommitteeBits:   cb1,
 		Data:            data1,
 		Signature:       sig.Marshal(),
@@ -787,16 +783,28 @@ func Test_packAttestations_ElectraOnChainAggregates(t *testing.T) {
 	require.NoError(t, pool.SaveAggregatedAttestations([]ethpb.Att{d0_c0_a1, d0_c0_a2, d0_c0_a3, d0_c1_a1, d0_c1_a2, d1_c0_a1, d1_c1_a1, d1_c1_a2, d1_c1_a3}))
 	slot := primitives.Slot(1)
 	s := &Server{AttPool: pool, HeadFetcher: &chainMock.ChainService{}, TimeFetcher: &chainMock.ChainService{Slot: &slot}}
-	st, _ := util.DeterministicGenesisStateElectra(t, 128)
+
+	// We need the correct number of validators so that there are at least 2 committees per slot
+	// and each committee has exactly 6 validators (this is because we have 6 aggregation bits).
+	st, _ := util.DeterministicGenesisStateElectra(t, 192)
+
 	require.NoError(t, st.SetSlot(params.BeaconConfig().SlotsPerEpoch+1))
 
 	atts, err := s.packAttestations(ctx, st, params.BeaconConfig().SlotsPerEpoch)
 	require.NoError(t, err)
 	require.Equal(t, 6, len(atts))
+	assert.Equal(t, true,
+		atts[0].GetAggregationBits().Count() >= atts[1].GetAggregationBits().Count() &&
+			atts[1].GetAggregationBits().Count() >= atts[2].GetAggregationBits().Count() &&
+			atts[2].GetAggregationBits().Count() >= atts[3].GetAggregationBits().Count() &&
+			atts[3].GetAggregationBits().Count() >= atts[4].GetAggregationBits().Count() &&
+			atts[4].GetAggregationBits().Count() >= atts[5].GetAggregationBits().Count(),
+		"on-chain aggregates are not sorted by aggregation bit count",
+	)
 
 	t.Run("slot takes precedence", func(t *testing.T) {
 		moreRecentAtt := &ethpb.AttestationElectra{
-			AggregationBits: bitfield.Bitlist{0b11000}, // we set only one bit for committee_index_0
+			AggregationBits: bitfield.Bitlist{0b1100000}, // we set only one bit for committee_index_0
 			CommitteeBits:   cb1,
 			Data:            util.HydrateAttestationData(&ethpb.AttestationData{Slot: 1, BeaconBlockRoot: bytesutil.PadTo([]byte{'0'}, 32)}),
 			Signature:       sig.Marshal(),
