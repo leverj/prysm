@@ -86,34 +86,14 @@ func (vs *Server) packAttestations(ctx context.Context, latestState state.Beacon
 		if err != nil {
 			return nil, err
 		}
-		attsById[id], err = proposerAtts(as).sort()
-		if err != nil {
-			return nil, err
-		}
+		attsById[id] = as
 	}
 
 	var attsForInclusion proposerAtts
 	if postElectra {
-		idx := 0
-		for {
-			topAggregates := make([]ethpb.Att, 0, len(attsById))
-			for _, v := range attsById {
-				if len(v) > idx {
-					topAggregates = append(topAggregates, v[idx])
-				}
-			}
-
-			if len(topAggregates) == 0 {
-				break
-			}
-
-			onChainAggregates, err := computeOnChainAggregate(topAggregates)
-			if err != nil {
-				return nil, err
-			}
-			attsForInclusion = append(attsForInclusion, onChainAggregates...)
-
-			idx++
+		attsForInclusion, err = onChainAggregates(attsById)
+		if err != nil {
+			return nil, err
 		}
 	} else {
 		attsForInclusion = make([]ethpb.Att, 0)
@@ -142,6 +122,50 @@ func (vs *Server) packAttestations(ctx context.Context, latestState state.Beacon
 
 	atts = sorted.limitToMaxAttestations()
 	return vs.filterAttestationBySignature(ctx, atts, latestState)
+}
+
+func onChainAggregates(attsById map[attestation.Id][]ethpb.Att) (proposerAtts, error) {
+	var result proposerAtts
+	var err error
+
+	// When constructing on-chain aggregates, we want to combine the most profitable
+	// aggregate for each ID, then the second most profitable, and so on and so forth.
+	// Because of this we sort attestations at the beginning.
+	for id, as := range attsById {
+		attsById[id], err = proposerAtts(as).sort()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// We construct the first on-chain aggregate by taking the first aggregate for each ID.
+	// We construct the second on-chain aggregate by taking the second aggregate for each ID.
+	// We continue doing this until we run out of aggregates.
+	idx := 0
+	for {
+		topAggregates := make([]ethpb.Att, 0, len(attsById))
+		for _, as := range attsById {
+			// In case there are no more aggregates for an ID, we skip that ID.
+			if len(as) > idx {
+				topAggregates = append(topAggregates, as[idx])
+			}
+		}
+
+		// Once there are no more aggregates for any ID, we are done.
+		if len(topAggregates) == 0 {
+			break
+		}
+
+		onChainAggs, err := computeOnChainAggregate(topAggregates)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, onChainAggs...)
+
+		idx++
+	}
+
+	return result, nil
 }
 
 // filter separates attestation list into two groups: valid and invalid attestations.
