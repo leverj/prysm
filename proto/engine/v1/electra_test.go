@@ -42,7 +42,7 @@ func TestGetDecodedExecutionRequests(t *testing.T) {
 			"680000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
 		require.NoError(t, err)
 		ebe := &enginev1.ExecutionBundleElectra{
-			ExecutionRequests: [][]byte{append([]byte{2}, consolidationRequestBytes...), append([]byte{0}, depositRequestBytes...)},
+			ExecutionRequests: [][]byte{append([]byte{consolidationRequestType}, consolidationRequestBytes...), append([]byte{depositRequestType}, depositRequestBytes...)},
 		}
 		_, err = ebe.GetDecodedExecutionRequests()
 		require.ErrorContains(t, "invalid execution request type order", err)
