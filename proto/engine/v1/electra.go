@@ -27,13 +27,13 @@ const (
 
 func (ebe *ExecutionBundleElectra) GetDecodedExecutionRequests() (*ExecutionRequests, error) {
 	requests := &ExecutionRequests{}
-	var prevTypeNum int
+	var prevTypeNum uint8
 	for i := range ebe.ExecutionRequests {
 		requestType := ebe.ExecutionRequests[i][0]
-		if prevTypeNum > int(requestType) {
+		if prevTypeNum > requestType {
 			return nil, errors.New("invalid execution request type order, requests should be in sorted order")
 		}
-		prevTypeNum = int(requestType)
+		prevTypeNum = requestType
 		requestListInSSZBytes := ebe.ExecutionRequests[i][1:]
 		switch requestType {
 		case depositRequestType:
