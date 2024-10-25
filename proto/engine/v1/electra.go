@@ -27,9 +27,13 @@ const (
 
 func (ebe *ExecutionBundleElectra) GetDecodedExecutionRequests() (*ExecutionRequests, error) {
 	requests := &ExecutionRequests{}
-
+	var prevTypeNum int
 	for i := range ebe.ExecutionRequests {
 		requestType := ebe.ExecutionRequests[i][0]
+		if prevTypeNum > int(requestType) {
+			return nil, errors.New("invalid execution request type order, requests should be in sorted order")
+		}
+		prevTypeNum = int(requestType)
 		requestListInSSZBytes := ebe.ExecutionRequests[i][1:]
 		switch requestType {
 		case depositRequestType:
@@ -50,6 +54,8 @@ func (ebe *ExecutionBundleElectra) GetDecodedExecutionRequests() (*ExecutionRequ
 				return nil, err
 			}
 			requests.Consolidations = crs
+		default:
+			return nil, errors.Errorf("unsupported request type %d", requestType)
 		}
 	}
 
@@ -61,8 +67,9 @@ func EncodeExecutionRequests(requests *ExecutionRequests) ([]hexutil.Bytes, erro
 		return nil, errors.New("invalid execution requests")
 	}
 
-	var requestsData []hexutil.Bytes
+	requestsData := make([]hexutil.Bytes, 0)
 
+	// request types MUST be in sorted order starting from 0
 	if len(requests.Deposits) > 0 {
 		drBytes, err := marshalItems(requests.Deposits)
 		if err != nil {
