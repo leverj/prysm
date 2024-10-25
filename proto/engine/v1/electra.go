@@ -94,7 +94,7 @@ func EncodeExecutionRequests(requests *ExecutionRequests) ([]hexutil.Bytes, erro
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to marshal consolidation requests")
 		}
-		requestData := []byte{2}
+		requestData := []byte{consolidationRequestType}
 		requestData = append(requestData, crBytes...)
 		requestsData = append(requestsData, requestData)
 	}
