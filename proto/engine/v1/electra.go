@@ -85,7 +85,7 @@ func EncodeExecutionRequests(requests *ExecutionRequests) ([]hexutil.Bytes, erro
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to marshal withdrawal requests")
 		}
-		requestData := []byte{1}
+		requestData := []byte{withdrawalRequestType}
 		requestData = append(requestData, wrBytes...)
 		requestsData = append(requestsData, requestData)
 	}
