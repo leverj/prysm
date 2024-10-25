@@ -28,7 +28,8 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Return false from HasBlock if the block is being synced. 
 - Cleanup forkchoice on failed insertions.
 - Use read only validator for core processing to avoid unnecessary copying.
-- Use ROBlock across block processing pipeline
+- Use ROBlock across block processing pipeline.
+- Added missing Eth-Consensus-Version headers to GetBlockAttestationsV2 and GetAttesterSlashingsV2 endpoints.
 
 ### Deprecated
 
@@ -43,6 +44,9 @@ The format is based on Keep a Changelog, and this project adheres to Semantic Ve
 - Fixed mesh size by appending `gParams.Dhi = gossipSubDhi`
 - Fix skipping partial withdrawals count.
 - wait for the async StreamEvent writer to exit before leaving the http handler, avoiding race condition panics [pr](https://github.com/prysmaticlabs/prysm/pull/14557)
+- Certain deb files were returning a 404 which made building new docker images without an existing
+  cache impossible. This has been fixed with updates to rules_oci and bazel-lib.
+- Fixed an issue where the length check between block body KZG commitments and the existing cache from the database was incompatible.
 
 ### Security
 
@@ -96,6 +100,7 @@ Updating to this release is recommended at your convenience.
 - fastssz version bump (better error messages).
 - SSE implementation that sheds stuck clients. [pr](https://github.com/prysmaticlabs/prysm/pull/14413)
 - Added GetPoolAttesterSlashingsV2 endpoint.
+- Use engine API get-blobs for block subscriber to reduce block import latency and potentially reduce bandwidth.
 
 ### Changed
 
