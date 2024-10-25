@@ -683,12 +683,13 @@ func Test_packAttestations(t *testing.T) {
 }
 
 func Test_packAttestations_ElectraOnChainAggregates(t *testing.T) {
+	ctx := context.Background()
+
 	params.SetupTestConfigCleanup(t)
 	cfg := params.BeaconConfig().Copy()
 	cfg.ElectraForkEpoch = 1
 	params.OverrideBeaconConfig(cfg)
 
-	ctx := context.Background()
 	key, err := blst.RandKey()
 	require.NoError(t, err)
 	sig := key.Sign([]byte{'X'})
