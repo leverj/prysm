@@ -55,9 +55,8 @@ func ProcessEffectiveBalanceUpdates(state state.BeaconState) error {
 
 		if balance+downwardThreshold < val.EffectiveBalance || val.EffectiveBalance+upwardThreshold < balance {
 			effectiveBal := min(balance-balance%effBalanceInc, effectiveBalanceLimit)
-			newVal := ethpb.CopyValidator(val)
-			newVal.EffectiveBalance = effectiveBal
-			return true, newVal, nil
+			val.EffectiveBalance = effectiveBal
+			return true, val, nil
 		}
 		return false, val, nil
 	}
