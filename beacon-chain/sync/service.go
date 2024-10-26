@@ -39,6 +39,7 @@ import (
 	"github.com/prysmaticlabs/prysm/v5/config/params"
 	"github.com/prysmaticlabs/prysm/v5/consensus-types/blocks"
 	"github.com/prysmaticlabs/prysm/v5/consensus-types/interfaces"
+	"github.com/prysmaticlabs/prysm/v5/consensus-types/primitives"
 	leakybucket "github.com/prysmaticlabs/prysm/v5/container/leaky-bucket"
 	ethpb "github.com/prysmaticlabs/prysm/v5/proto/prysm/v1alpha1"
 	"github.com/prysmaticlabs/prysm/v5/runtime"
@@ -75,27 +76,36 @@ var (
 // Common type for functional p2p validation options.
 type validationFn func(ctx context.Context) (pubsub.ValidationResult, error)
 
+type lcFinalityUpdateInfo struct {
+	slot             primitives.Slot
+	hasSupermajority bool
+}
+
+type lcOptimisticUpdateInfo struct {
+	slot primitives.Slot
+}
+
 // config to hold dependencies for the sync service.
 type config struct {
-	attestationNotifier     operation.Notifier
-	p2p                     p2p.P2P
-	beaconDB                db.NoHeadAccessDatabase
-	attPool                 attestations.Pool
-	exitPool                voluntaryexits.PoolManager
-	slashingPool            slashings.PoolManager
-	syncCommsPool           synccommittee.Pool
-	blsToExecPool           blstoexec.PoolManager
-	chain                   blockchainService
-	initialSync             Checker
-	blockNotifier           blockfeed.Notifier
-	operationNotifier       operation.Notifier
-	executionReconstructor  execution.Reconstructor
-	stateGen                *stategen.State
-	slasherAttestationsFeed *event.Feed
-	slasherBlockHeadersFeed *event.Feed
-	clock                   *startup.Clock
-	stateNotifier           statefeed.Notifier
-	blobStorage             *filesystem.BlobStorage
+	attestationNotifier           operation.Notifier
+	p2p                           p2p.P2P
+	beaconDB                      db.NoHeadAccessDatabase
+	attPool                       attestations.Pool
+	exitPool                      voluntaryexits.PoolManager
+	slashingPool                  slashings.PoolManager
+	syncCommsPool                 synccommittee.Pool
+	blsToExecPool                 blstoexec.PoolManager
+	chain                         blockchainService
+	initialSync                   Checker
+	blockNotifier                 blockfeed.Notifier
+	operationNotifier             operation.Notifier
+	executionPayloadReconstructor execution.PayloadReconstructor
+	stateGen                      *stategen.State
+	slasherAttestationsFeed       *event.Feed
+	slasherBlockHeadersFeed       *event.Feed
+	clock                         *startup.Clock
+	stateNotifier                 statefeed.Notifier
+	blobStorage                   *filesystem.BlobStorage
 }
 
 // This defines the interface for interacting with block chain service
@@ -158,6 +168,10 @@ type Service struct {
 	newBlobVerifier                  verification.NewBlobVerifier
 	availableBlocker                 coverage.AvailableBlocker
 	ctxMap                           ContextByteVersions
+	lcFinalityUpdateLock             sync.Mutex
+	lastLCFinalityUpdate             *lcFinalityUpdateInfo
+	lcOptimisticUpdateLock           sync.Mutex
+	lastLCOptimisticUpdate           *lcOptimisticUpdateInfo
 }
 
 // NewService initializes new regular sync service.
