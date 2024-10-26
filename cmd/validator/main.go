@@ -50,6 +50,7 @@ func startNode(ctx *cli.Context) error {
 
 var appFlags = []cli.Flag{
 	flags.BeaconRPCProviderFlag,
+	flags.BeaconRPCGatewayProviderFlag,
 	flags.BeaconRESTApiProviderFlag,
 	flags.CertFlag,
 	flags.GraffitiFlag,
@@ -59,12 +60,12 @@ var appFlags = []cli.Flag{
 	flags.EnableRPCFlag,
 	flags.RPCHost,
 	flags.RPCPort,
-	flags.HTTPServerPort,
-	flags.HTTPServerHost,
+	flags.GRPCGatewayPort,
+	flags.GRPCGatewayHost,
 	flags.GRPCRetriesFlag,
 	flags.GRPCRetryDelayFlag,
 	flags.GRPCHeadersFlag,
-	flags.HTTPServerCorsDomain,
+	flags.GRPCGatewayCorsDomain,
 	flags.DisableAccountMetricsFlag,
 	flags.MonitoringPortFlag,
 	flags.SlasherRPCProviderFlag,

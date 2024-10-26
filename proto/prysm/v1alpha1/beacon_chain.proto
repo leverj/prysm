@@ -288,6 +288,7 @@ message ListIndexedAttestationsRequest {
 
 // Request for attestations.
 message ListAttestationsRequest {
+    // TODO(preston): Test oneof with gRPC gateway.
 
     oneof query_filter {
         // Filter attestations by epoch processed.
