@@ -2331,8 +2331,13 @@ func TestRollbackBlock(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, true, hasState)
 
+	// Set invalid parent root to trigger forkchoice error.
+	wsb.SetParentRoot([]byte("bad"))
+	roblock, err := consensusblocks.NewROBlockWithRoot(wsb, root)
+	require.NoError(t, err)
+
 	// Rollback block insertion into db and caches.
-	service.rollbackBlock(ctx, root)
+	require.ErrorContains(t, "invalid parent root", service.postBlockProcess(&postBlockProcessConfig{ctx, roblock, [32]byte{}, postState, false}))
 
 	// The block should no longer exist.
 	require.Equal(t, false, service.cfg.BeaconDB.HasBlock(ctx, root))
