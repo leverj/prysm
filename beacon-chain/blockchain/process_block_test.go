@@ -2337,7 +2337,7 @@ func TestRollbackBlock(t *testing.T) {
 	require.NoError(t, err)
 
 	// Rollback block insertion into db and caches.
-	require.ErrorContains(t, "invalid parent root", service.postBlockProcess(&postBlockProcessConfig{ctx, roblock, [32]byte{}, postState, false}))
+	require.ErrorContains(t, fmt.Sprintf("could not insert block %d to fork choice store", roblock.Block().Slot()), service.postBlockProcess(&postBlockProcessConfig{ctx, roblock, [32]byte{}, postState, false}))
 
 	// The block should no longer exist.
 	require.Equal(t, false, service.cfg.BeaconDB.HasBlock(ctx, root))
