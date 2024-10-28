@@ -37,9 +37,9 @@ func (vs *Server) eth1DataMajorityVote(ctx context.Context, beaconState state.Be
 	slot := beaconState.Slot()
 	votingPeriodStartTime := vs.slotStartTime(slot)
 
-	if vs.MockEth1Votes {
-		return vs.mockETH1DataVote(ctx, slot)
-	}
+// 	if vs.MockEth1Votes {
+// 		return vs.mockETH1DataVote(ctx, slot)
+// 	}
 	if !vs.Eth1InfoFetcher.ExecutionClientConnected() {
 		return vs.randomETH1DataVote(ctx)
 	}

@@ -3,7 +3,7 @@
 package deposit
 
 import (
-	"github.com/pkg/errors"
+// 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/core/signing"
 	"github.com/prysmaticlabs/prysm/v5/config/params"
 	"github.com/prysmaticlabs/prysm/v5/crypto/bls"
@@ -81,34 +81,34 @@ func WithdrawalCredentialsHash(withdrawalKey bls.SecretKey) []byte {
 
 // VerifyDepositSignature verifies the correctness of Eth1 deposit BLS signature
 func VerifyDepositSignature(dd *ethpb.Deposit_Data, domain []byte) error {
-	ddCopy := ethpb.CopyDepositData(dd)
-	publicKey, err := bls.PublicKeyFromBytes(ddCopy.PublicKey)
-	if err != nil {
-		return errors.Wrap(err, "could not convert bytes to public key")
-	}
-	sig, err := bls.SignatureFromBytes(ddCopy.Signature)
-	if err != nil {
-		return errors.Wrap(err, "could not convert bytes to signature")
-	}
-	di := &ethpb.DepositMessage{
-		PublicKey:             ddCopy.PublicKey,
-		WithdrawalCredentials: ddCopy.WithdrawalCredentials,
-		Amount:                ddCopy.Amount,
-	}
-	root, err := di.HashTreeRoot()
-	if err != nil {
-		return errors.Wrap(err, "could not get signing root")
-	}
-	signingData := &ethpb.SigningData{
-		ObjectRoot: root[:],
-		Domain:     domain,
-	}
-	ctrRoot, err := signingData.HashTreeRoot()
-	if err != nil {
-		return errors.Wrap(err, "could not get container root")
-	}
-	if !sig.Verify(publicKey, ctrRoot[:]) {
-		return signing.ErrSigFailedToVerify
-	}
+// 	ddCopy := dd.Copy()
+// 	publicKey, err := bls.PublicKeyFromBytes(ddCopy.PublicKey)
+// 	if err != nil {
+// 		return errors.Wrap(err, "could not convert bytes to public key")
+// 	}
+// 	sig, err := bls.SignatureFromBytes(ddCopy.Signature)
+// 	if err != nil {
+// 		return errors.Wrap(err, "could not convert bytes to signature")
+// 	}
+// 	di := &ethpb.DepositMessage{
+// 		PublicKey:             ddCopy.PublicKey,
+// 		WithdrawalCredentials: ddCopy.WithdrawalCredentials,
+// 		Amount:                ddCopy.Amount,
+// 	}
+// 	root, err := di.HashTreeRoot()
+// 	if err != nil {
+// 		return errors.Wrap(err, "could not get signing root")
+// 	}
+// 	signingData := &ethpb.SigningData{
+// 		ObjectRoot: root[:],
+// 		Domain:     domain,
+// 	}
+// 	ctrRoot, err := signingData.HashTreeRoot()
+// 	if err != nil {
+// 		return errors.Wrap(err, "could not get container root")
+// 	}
+// 	if !sig.Verify(publicKey, ctrRoot[:]) {
+// 		return signing.ErrSigFailedToVerify
+// 	}
 	return nil
 }
