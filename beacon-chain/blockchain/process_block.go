@@ -693,10 +693,10 @@ func (s *Service) handleInvalidExecutionError(ctx context.Context, err error, bl
 // to always ensure that the node's internal state is consistent.
 func (s *Service) rollbackBlock(ctx context.Context, blockRoot [32]byte) {
 	log.Warnf("Rolling back insertion of block with root %#x due to processing error", blockRoot)
-	if err := s.cfg.BeaconDB.DeleteBlock(ctx, blockRoot); err != nil {
-		log.WithError(err).Errorf("Could not delete block with block root %#x", blockRoot)
-	}
 	if err := s.cfg.StateGen.DeleteStateFromCaches(ctx, blockRoot); err != nil {
 		log.WithError(err).Errorf("Could not delete state from caches with block root %#x", blockRoot)
+	}
+	if err := s.cfg.BeaconDB.DeleteBlock(ctx, blockRoot); err != nil {
+		log.WithError(err).Errorf("Could not delete block with block root %#x", blockRoot)
 	}
 }
