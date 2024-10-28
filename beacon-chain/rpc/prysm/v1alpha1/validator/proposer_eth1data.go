@@ -40,9 +40,9 @@ func (vs *Server) eth1DataMajorityVote(ctx context.Context, beaconState state.Be
 // 	if vs.MockEth1Votes {
 // 		return vs.mockETH1DataVote(ctx, slot)
 // 	}
-	if !vs.Eth1InfoFetcher.ExecutionClientConnected() {
-		return vs.randomETH1DataVote(ctx)
-	}
+// 	if !vs.Eth1InfoFetcher.ExecutionClientConnected() {
+// 		return vs.randomETH1DataVote(ctx)
+// 	}
 	eth1DataNotification = false
 
 	genesisTime, _ := vs.Eth1InfoFetcher.GenesisExecutionChainInfo()
