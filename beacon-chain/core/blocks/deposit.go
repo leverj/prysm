@@ -3,7 +3,9 @@ package blocks
 import (
 	"context"
 	"fmt"
-
+// fixme: gluon : change start
+	"encoding/hex"
+	// fixme: gluon : change end
 	"github.com/pkg/errors"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/core/helpers"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/core/signing"
@@ -172,7 +174,11 @@ func ProcessDeposit(beaconState state.BeaconState, deposit *ethpb.Deposit, verif
 	index, ok := beaconState.ValidatorIndexByPubkey(bytesutil.ToBytes48(pubKey))
 	if !ok {
 		if verifySignature {
-			domain, err := signing.ComputeDomain(params.BeaconConfig().DomainDeposit, nil, nil)
+		// fixme: gluon : change start
+			//domain, err := signing.ComputeDomain(params.BeaconConfig().DomainDeposit, nil, nil)
+			forkBytes, err := hex.DecodeString("00000000")
+			domain, err := signing.ComputeDomain(params.BeaconConfig().DomainDeposit, forkBytes, nil)
+			// fixme: gluon : change end
 			if err != nil {
 				return nil, newValidator, err
 			}

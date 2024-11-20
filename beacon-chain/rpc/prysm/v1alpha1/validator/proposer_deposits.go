@@ -70,11 +70,11 @@ func (vs *Server) deposits(
 ) ([]*ethpb.Deposit, error) {
 	ctx, span := trace.StartSpan(ctx, "ProposerServer.deposits")
 	defer span.End()
-
+// fixme: gluon : change start
 // 	if vs.MockEth1Votes {
 // 		return []*ethpb.Deposit{}, nil
 // 	}
-
+// fixme: gluon : change end
 	if !vs.Eth1InfoFetcher.ExecutionClientConnected() {
 		log.Warn("not connected to eth1 node, skip pending deposit insertion")
 		return []*ethpb.Deposit{}, nil

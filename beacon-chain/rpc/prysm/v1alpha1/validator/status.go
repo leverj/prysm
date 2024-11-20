@@ -3,7 +3,9 @@ package validator
 import (
 	"context"
 	"errors"
-
+// fixme: gluon : change start
+	"encoding/hex"
+// fixme: gluon : change end
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/core/helpers"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/core/signing"
 	"github.com/prysmaticlabs/prysm/v5/beacon-chain/core/time"
@@ -314,11 +316,15 @@ func (vs *Server) validatorStatus(
 		if eth1BlockNumBigInt == nil { // No deposit found in ETH1.
 			return resp, nonExistentIndex
 		}
+    // fixme: gluon : change start
+		forkBytes, err := hex.DecodeString("00000000")
 		domain, err := signing.ComputeDomain(
 			params.BeaconConfig().DomainDeposit,
-			nil, /*forkVersion*/
+			//nil, /*forkVersion*/
+			forkBytes,
 			nil, /*genesisValidatorsRoot*/
 		)
+    // fixme: gluon : change end
 		if err != nil {
 			log.Warn("Could not compute domain")
 			return resp, nonExistentIndex
