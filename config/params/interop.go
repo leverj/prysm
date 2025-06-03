@@ -1,8 +1,11 @@
 package params
-
+import (
+	"fmt"
+)
 // InteropConfig provides a generic config suitable for interop testing.
 func InteropConfig() *BeaconChainConfig {
 	c := MainnetConfig().Copy()
+	fmt.Printf("[DEBUG] InteropConfig: c=%d, ", c)
 // fixme: gluon : change start
     // Custom fork versions
     c.ConfigName = InteropName
